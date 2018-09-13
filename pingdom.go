@@ -2,8 +2,12 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 	"os"
 	"sort"
+	"strconv"
+	"strings"
+	"sync"
 	"time"
 
 	"github.com/russellcardullo/go-pingdom/pingdom"
@@ -18,7 +22,7 @@ type UptimeResult struct {
 	unknown int64
 }
 
-func getUptimes() {
+func getUptimes(w http.ResponseWriter, r *http.Request) {
 	gotenv.Load()
 	client := pingdom.NewClient(os.Getenv("PINGDOM_EMAIL"), os.Getenv("PINGDOM_PASSWORD"), os.Getenv("PINGDOM_TOKEN"))
 
@@ -28,73 +32,124 @@ func getUptimes() {
 		os.Exit(1)
 	}
 
-	var res []UptimeResult
+	var cwpRes []UptimeResult
+	var sspRes []UptimeResult
 
-	var totalUptime int64
-	var totalTime int64
+	var cwpTotalUptime int64
+	var cwpTotalTime int64
+
+	var sspTotalUptime int64
+	var sspTotalTime int64
+
+	var wg sync.WaitGroup
+	wg.Add(len(checks))
 
 	for i, check := range checks {
+		go func(i int, check pingdom.CheckResponse) {
+			defer wg.Done()
 
-		if check.Paused {
-			continue
-		}
-
-		if check.Status == "paused" {
-			continue
-		}
-
-		states, err := outageSummary(client, check.ID)
-		if err != nil {
-			fmt.Println(err)
-			continue
-		}
-
-		var uptimeSec int64
-		var downtimeSec int64
-		var unknownSec int64
-
-		for _, k := range states {
-			switch k.Status {
-			case "up":
-				uptimeSec += k.Timeto - k.Timefrom
-			case "down":
-				downtimeSec += k.Timeto - k.Timefrom
-			case "unknown":
-				unknownSec += k.Timeto - k.Timefrom
+			if check.Paused {
+				return
 			}
-		}
 
-		total := uptimeSec + downtimeSec + unknownSec
-		if total == 0 {
-			continue
-		}
+			if check.Status == "paused" {
+				return
+			}
 
-		totalUptime += uptimeSec
-		totalTime += total
+			states, err := outageSummary(client, check.ID)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
 
-		res = append(res, UptimeResult{
-			check:   check,
-			uptime:  (float64(uptimeSec) / float64(total)) * 100,
-			up:      uptimeSec,
-			down:    downtimeSec,
-			unknown: unknownSec,
-		})
-		fmt.Printf("%d of %d\n", i, len(checks))
+			var uptimeSec int64
+			var downtimeSec int64
+			var unknownSec int64
+
+			for _, k := range states {
+				switch k.Status {
+				case "up":
+					uptimeSec += k.Timeto - k.Timefrom
+				case "down":
+					downtimeSec += k.Timeto - k.Timefrom
+				case "unknown":
+					unknownSec += k.Timeto - k.Timefrom
+				}
+			}
+
+			total := uptimeSec + downtimeSec + unknownSec
+			if total == 0 {
+				return
+			}
+
+			if strings.Contains(check.Name, "CWP") {
+				cwpTotalUptime += uptimeSec
+				cwpTotalTime += total
+				cwpRes = append(cwpRes, UptimeResult{
+					check:   check,
+					uptime:  (float64(uptimeSec) / float64(total)) * 100,
+					up:      uptimeSec,
+					down:    downtimeSec,
+					unknown: unknownSec,
+				})
+				fmt.Printf("%d of %d\n", i, len(checks))
+			}
+
+			if strings.Contains(check.Name, "SSP") {
+				sspTotalUptime += uptimeSec
+				sspTotalTime += total
+				sspRes = append(sspRes, UptimeResult{
+					check:   check,
+					uptime:  (float64(uptimeSec) / float64(total)) * 100,
+					up:      uptimeSec,
+					down:    downtimeSec,
+					unknown: unknownSec,
+				})
+				fmt.Printf("%d of %d\n", i, len(checks))
+			}
+		}(i, check)
 	}
 
-	sort.Slice(res, func(i, j int) bool {
-		return res[i].uptime > res[j].uptime
+	wg.Wait()
+
+	sort.Slice(cwpRes, func(i, j int) bool {
+		return cwpRes[i].uptime > cwpRes[j].uptime
 	})
 
-	for _, r := range res {
+	sort.Slice(sspRes, func(i, j int) bool {
+		return sspRes[i].uptime > sspRes[j].uptime
+	})
+
+	for _, r := range cwpRes {
 		downtime := r.down + r.unknown
 		dur := time.Second * time.Duration(downtime)
 
-		fmt.Printf("%0.3f | %s (%s) | %s\n", r.uptime, r.check.Name, r.check.Hostname, dur)
+		uptimeString := strconv.FormatFloat(r.uptime, 'f', 3, 64)
+		cwpUptimeMessage := strings.Join([]string{uptimeString, r.check.Name, dur.String(), "\n"}, " | ")
+		w.Write([]byte(cwpUptimeMessage))
 	}
 
-	fmt.Printf("\nTotal uptime: %0.3f\n", (float64(totalUptime)/float64(totalTime))*100)
+	w.Write([]byte("\n"))
 
+	for _, r := range sspRes {
+		downtime := r.down + r.unknown
+		dur := time.Second * time.Duration(downtime)
+
+		uptimeString := strconv.FormatFloat(r.uptime, 'f', 3, 64)
+		sspUptimeMessage := strings.Join([]string{uptimeString, r.check.Name, dur.String(), "\n"}, " | ")
+		w.Write([]byte(sspUptimeMessage))
+	}
+
+	cwpUptime := strconv.FormatFloat((float64(cwpTotalUptime)/float64(cwpTotalTime))*100, 'f', 3, 64)
+	cwpMessage := strings.Join([]string{"CWP Total uptime:", cwpUptime, "\n"}, " ")
+
+	sspUptime := strconv.FormatFloat((float64(sspTotalUptime)/float64(sspTotalTime))*100, 'f', 3, 64)
+	sspMessage := strings.Join([]string{"SSP Total uptime:", sspUptime, "\n"}, " ")
+
+	w.Write([]byte("\n"))
+
+	w.Write([]byte(cwpMessage))
+	w.Write([]byte(sspMessage))
 }
 
 type summaryOutageJsonResponse struct {
