@@ -1,0 +1,27 @@
+# PRE Dashboard
+
+## Purpose
+Reports on key metrics for PRE squad
+
+## Set-up
+
+### Install necessary modules
+
+`go get github.com/jakedaleweb/pre-dash`
+`go get github.com/russellcardullo/go-pingdom/pingdom`
+`go get github.com/subosito/gotenv`
+
+### Add env variables
+
+Create a `.env` file containing
+
+```
+export PINGDOM_EMAIL=whatever@whatever.com
+export PINGDOM_PASSWORD=hunter12
+export PINGDOM_TOKEN=tooooooooooooooooken
+```
+
+## Running
+
+`cd $GOPATH/github.com/jakedaleweb/pre-dash`
+`go install . && pre-dash`
