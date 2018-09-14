@@ -23,6 +23,7 @@ type UptimeResult struct {
 }
 
 func getUptimes(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Cache-Control", "max-age=300")
 	gotenv.Load()
 	client := pingdom.NewClient(os.Getenv("PINGDOM_EMAIL"), os.Getenv("PINGDOM_PASSWORD"), os.Getenv("PINGDOM_TOKEN"))
 
@@ -92,7 +93,6 @@ func getUptimes(w http.ResponseWriter, r *http.Request) {
 					down:    downtimeSec,
 					unknown: unknownSec,
 				})
-				fmt.Printf("%d of %d\n", i, len(checks))
 			}
 
 			if strings.Contains(check.Name, "SSP") {
@@ -105,7 +105,6 @@ func getUptimes(w http.ResponseWriter, r *http.Request) {
 					down:    downtimeSec,
 					unknown: unknownSec,
 				})
-				fmt.Printf("%d of %d\n", i, len(checks))
 			}
 		}(i, check)
 	}
