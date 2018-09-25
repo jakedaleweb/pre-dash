@@ -13,7 +13,10 @@ func main() {
 	http.HandleFunc("/pingdom", getUptimes)
 	http.HandleFunc("/freshdesk", getIncidentTickets)
 	http.HandleFunc("/", homePage)
+
+	http.HandleFunc("/favicon.ico", faviconHandler)
 	http.Handle("/css/", http.StripPrefix("/css/", http.FileServer(http.Dir("css"))))
+
 	if err := http.ListenAndServe(":8082", nil); err != nil {
 		panic(err)
 	}
@@ -26,4 +29,8 @@ func homePage(w http.ResponseWriter, r *http.Request) {
 	tmpl := template.Must(template.ParseFiles("templates/index.html"))
 	data := HomePage{Title: "Home"}
 	tmpl.Execute(w, data)
+}
+
+func faviconHandler(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "img/favicon.ico")
 }
