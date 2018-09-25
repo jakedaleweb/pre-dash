@@ -52,11 +52,15 @@ type HomePage struct {
 }
 
 type PingdomPage struct {
-	Title     string
-	CwpRes    []ResultRow
-	SspRes    []ResultRow
-	SspUptime string
-	CwpUptime string
+	Title       string
+	CwpRes      []ResultRow
+	SspRes      []ResultRow
+	SspUptime   string
+	CwpUptime   string
+	SspDiff     string
+	SspIncrease bool
+	CwpDiff     string
+	CwpIncrease bool
 }
 
 type FreshdeskPage struct {

@@ -39,7 +39,7 @@ func getIncidentTickets(w http.ResponseWriter, r *http.Request) {
 		strAvg = ""
 	}
 
-	// If recent avg is 5 and previosu is 6 we are down one hour so the diff is -1 which is positive
+	// If recent avg is 5 and previous is 6 we are down one hour so the diff is -1 which is negative
 	diff := recentAvg - prevAvg
 	strDiff := strconv.FormatFloat(diff, 'f', 3, 64)
 	if math.IsNaN(diff) {

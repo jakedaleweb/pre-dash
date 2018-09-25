@@ -56,12 +56,13 @@ img {
 .avg-diff {
 	background-color: #130f40;
 	padding: 20px;
+	color: #6ad6e3;
 }
 
 .increase {
-	color: #eb4d4b;
+	color: #6ab04c;
 }
 
 .decrease {
-	color: #6ab04c;
+	color: #eb4d4b;
 }

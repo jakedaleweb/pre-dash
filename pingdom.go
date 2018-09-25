@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"html/template"
+	"log"
 	"net/http"
 	"os"
 	"sort"
@@ -18,13 +19,56 @@ func getUptimes(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "max-age=300")
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
-	client := pingdom.NewClient(os.Getenv("PINGDOM_EMAIL"), os.Getenv("PINGDOM_PASSWORD"), os.Getenv("PINGDOM_TOKEN"))
-
-	checks, err := client.Checks.List()
+	from := time.Now().Add(-14 * 24 * time.Hour)
+	to := time.Now()
+	cwpRes, sspRes, sspUptime, cwpUptime, err := formatSummaries(from, to)
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		log.Fatal(err)
 	}
+
+	fromPrev := time.Now().Add(-28 * 24 * time.Hour)
+	toPrev := time.Now().Add(-14 * 24 * time.Hour)
+	_, _, sspUptimePrev, cwpUptimePrev, prevErr := formatSummaries(fromPrev, toPrev)
+	if prevErr != nil {
+		log.Fatal(err)
+	}
+
+	cwpUptimeStr := strconv.FormatFloat(cwpUptime, 'f', 3, 64)
+	sspUptimeStr := strconv.FormatFloat(sspUptime, 'f', 3, 64)
+
+	cwpDiff := cwpUptime - cwpUptimePrev
+	// Check if the diff is less than 0 (i.e. not increased)
+	cwpIncrease := true
+	if cwpDiff < 0 {
+		cwpIncrease = false
+	}
+
+	sspDiff := sspUptime - sspUptimePrev
+	// Check if the diff is less than 0 (i.e. not increased)
+	sspIncrease := true
+	if sspDiff < 0 {
+		sspIncrease = false
+	}
+
+	cwpDiffStr := strconv.FormatFloat(cwpDiff, 'f', 3, 64)
+	sspDiffStr := strconv.FormatFloat(sspDiff, 'f', 3, 64)
+
+	tmpl := template.Must(template.ParseFiles("templates/pingdom.html"))
+	data := PingdomPage{
+		Title:       "Availability report",
+		CwpRes:      parseResults(cwpRes, 99.7),
+		SspRes:      parseResults(sspRes, 99.9),
+		SspUptime:   sspUptimeStr,
+		CwpUptime:   cwpUptimeStr,
+		SspDiff:     sspDiffStr,
+		SspIncrease: sspIncrease,
+		CwpDiff:     cwpDiffStr,
+		CwpIncrease: cwpIncrease,
+	}
+	tmpl.Execute(w, data)
+}
+
+func formatSummaries(from time.Time, to time.Time) ([]UptimeResult, []UptimeResult, float64, float64, error) {
 
 	var cwpRes []UptimeResult
 	var sspRes []UptimeResult
@@ -34,6 +78,13 @@ func getUptimes(w http.ResponseWriter, r *http.Request) {
 
 	var sspTotalUptime int64
 	var sspTotalTime int64
+
+	client := pingdom.NewClient(os.Getenv("PINGDOM_EMAIL"), os.Getenv("PINGDOM_PASSWORD"), os.Getenv("PINGDOM_TOKEN"))
+
+	checks, err := client.Checks.List()
+	if err != nil {
+		return nil, nil, 0, 0, err
+	}
 
 	var wg sync.WaitGroup
 	wg.Add(len(checks))
@@ -50,9 +101,8 @@ func getUptimes(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			states, err := outageSummary(client, check.ID)
+			states, err := outageSummary(client, check.ID, from, to)
 			if err != nil {
-				fmt.Println(err)
 				return
 			}
 
@@ -104,6 +154,9 @@ func getUptimes(w http.ResponseWriter, r *http.Request) {
 
 	wg.Wait()
 
+	cwpUptime := float64(cwpTotalUptime) / float64(cwpTotalTime) * 100
+	sspUptime := float64(sspTotalUptime) / float64(sspTotalTime) * 100
+
 	sort.Slice(cwpRes, func(i, j int) bool {
 		return cwpRes[i].uptime < cwpRes[j].uptime
 	})
@@ -112,18 +165,7 @@ func getUptimes(w http.ResponseWriter, r *http.Request) {
 		return sspRes[i].uptime < sspRes[j].uptime
 	})
 
-	cwpUptime := strconv.FormatFloat((float64(cwpTotalUptime)/float64(cwpTotalTime))*100, 'f', 3, 64)
-	sspUptime := strconv.FormatFloat((float64(sspTotalUptime)/float64(sspTotalTime))*100, 'f', 3, 64)
-
-	tmpl := template.Must(template.ParseFiles("templates/pingdom.html"))
-	data := PingdomPage{
-		Title:     "Availability report",
-		CwpRes:    parseResults(cwpRes, 99.7),
-		SspRes:    parseResults(sspRes, 99.9),
-		SspUptime: sspUptime,
-		CwpUptime: cwpUptime,
-	}
-	tmpl.Execute(w, data)
+	return cwpRes, sspRes, cwpUptime, sspUptime, nil
 }
 
 func parseResults(res []UptimeResult, sla float64) []ResultRow {
@@ -160,11 +202,11 @@ func (s *State) To() time.Time {
 	return time.Unix(s.Timeto, 0)
 }
 
-func outageSummary(client *pingdom.Client, checkid int) ([]State, error) {
+func outageSummary(client *pingdom.Client, checkid int, from time.Time, to time.Time) ([]State, error) {
 
-	from := time.Now().Add(-14 * 24 * time.Hour)
 	params := make(map[string]string)
 	params["from"] = fmt.Sprintf("%d", from.Unix())
+	params["to"] = fmt.Sprintf("%d", to.Unix())
 
 	url := fmt.Sprintf("/summary.outage/%d", checkid)
 

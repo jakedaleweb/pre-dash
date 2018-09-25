@@ -19,7 +19,17 @@
     <div class="center-div">
         <h2>Uptime from the last 2 weeks in Pingdom</h2>
         <div class="results-table">
-            <h3>CWP Total uptime: {{.CwpUptime}} - SLA 99.7%</h3>
+            <div class="avg-diff">
+                <h3>CWP Total uptime: {{.CwpUptime}}</h3>
+                <p>SLA 99.7%</p>
+                {{ if .CwpDiff}}
+                    {{ if .CwpIncrease }}
+                        <p class="increase">Increased by {{.CwpDiff}}%</p>
+                    {{ else }}
+                        <p class="decrease">Decreased by {{.CwpDiff}}%</p>
+                    {{ end }}
+                {{ end }}
+            </div>
             <table>
                 <tr>
                     <th>Availability</th>
@@ -37,7 +47,17 @@
         </div>
 
         <div class="results-table">
-            <h3>SSP Total uptime: {{.SspUptime}} - SLO 99.9%</h3>
+            <div class="avg-diff">
+                <h3>SSP Total uptime: {{.SspUptime}}</h3>
+                <p>SLO 99.9%</p>
+                {{ if .SspDiff}}
+                    {{ if .SspIncrease }}
+                        <p class="increase">Increased by {{.SspDiff}}%</p>
+                    {{ else }}
+                        <p class="decrease">Decreased by {{.SspDiff}}%</p>
+                    {{ end }}
+                {{ end }}
+            </div>
             <table>
                 <tr>
                     <th>Availability</th>
