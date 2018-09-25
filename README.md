@@ -13,15 +13,17 @@ Reports on key metrics for PRE squad
 
 ### Add env variables
 
-Create a `.env` file containing
+Create a `.env` file in the web root containing
 
 ```
 export PINGDOM_EMAIL=whatever@whatever.com
 export PINGDOM_PASSWORD=hunter12
 export PINGDOM_TOKEN=tooooooooooooooooken
+export FRESHDESK_URL=my.freshdesk.url
+export FRESHDESK_TOKEN=verysecrettokendontshareever
 ```
 
 ## Running
 
 `cd $GOPATH/github.com/jakedaleweb/pre-dash`
-`go install . && pre-dash`
+`go install . && go run main.go pingdom.go freshdesk.go Types.go`
