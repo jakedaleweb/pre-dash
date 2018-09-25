@@ -82,7 +82,8 @@ type PingdomPage struct {
 
 type FreshdeskPage struct {
 	Title string
-	Avg   float64
+	Avg   string
+	Count int
 }
 
 type ResultRow struct {

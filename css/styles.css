@@ -1,5 +1,5 @@
 body {
-	background-color: #dff9fb;
+	background-color: #6ad6e3;
 	color: #130f40;
 	font-family: arial;
 }
@@ -34,9 +34,8 @@ header {
 	text-align: center;
 }
 
-.results-table {
-	float: left;
-	margin-right: 70px;
+img {
+	width: 100%;
 }
 
 .selected {
@@ -44,7 +43,12 @@ header {
 	color: #130f40;
 }
 
-.results-table-container {
+.center-div {
 	margin: 0 auto;
-	width: 70%;
+	width: 18%;
+	text-align: center;
+}
+
+.avg-incident {
+	font-size: 200%;
 }

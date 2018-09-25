@@ -15,8 +15,9 @@
     </nav>
         <h1>{{.Title}}</h1>
     </header>
-	<div>
-		<p>Average time between outages in the last 30 days: {{.Avg}} minutes</p>
+	<div class="center-div">
+		<h3>Average time between outages in the last 30 days based on {{.Count}} incident tickets</h3>
+		<p class="avg-incident">{{.Avg}} minutes</p>
 	</div>
 </body>
 </html>

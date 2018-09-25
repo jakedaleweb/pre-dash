@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"sort"
+	"strconv"
 	"strings"
 )
 
@@ -41,6 +42,7 @@ func getIncidentTickets(w http.ResponseWriter, r *http.Request) {
 	data := FreshdeskPage{
 		Title: "Time between incidents",
 		Avg:   getAverageBetween(length, incidents),
+		Count: length,
 	}
 	tmpl.Execute(w, data)
 }
@@ -91,7 +93,7 @@ func filterIncidentTickets(tickets *Tickets) ([]Ticket, error) {
 }
 
 // Returns average time between incident tickets creation in minutes
-func getAverageBetween(length int, incidents []Ticket) float64 {
+func getAverageBetween(length int, incidents []Ticket) string {
 	var timeBetween float64
 
 	for i := 1; i < length; i++ {
@@ -101,6 +103,7 @@ func getAverageBetween(length int, incidents []Ticket) float64 {
 	}
 
 	avgTimeBetween := timeBetween / float64(length)
+	strAvg := strconv.FormatFloat(avgTimeBetween, 'f', 3, 64)
 
-	return avgTimeBetween
+	return strAvg
 }

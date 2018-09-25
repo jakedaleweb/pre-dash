@@ -16,9 +16,10 @@
         <h1>{{.Title}}</h1>
     </header>
 
-    <div class="results-table-container">
+    <div class="center-div">
+        <h2>Uptime from the last 2 weeks in Pingdom</h2>
         <div class="results-table">
-            <h3>CWP Total uptime: {{.CwpUptime}}</h3>
+            <h3>CWP Total uptime: {{.CwpUptime}} - SLA 99.7%</h3>
             <table>
                 <tr>
                     <th>Availability</th>
@@ -27,7 +28,7 @@
                 </tr>
             {{range .CwpRes}}
                 <tr>
-                    <td>{{.Availability}}</td>
+                    <td>{{.Availability}}%</td>
                     <td>{{.Name}}</td>
                     <td>{{.Downtime}}</td>
                 </tr>
@@ -36,7 +37,7 @@
         </div>
 
         <div class="results-table">
-            <h3>SSP Total uptime: {{.SspUptime}}</h3>
+            <h3>SSP Total uptime: {{.SspUptime}} - SLO 99.9%</h3>
             <table>
                 <tr>
                     <th>Availability</th>
@@ -45,7 +46,7 @@
                 </tr>
             {{range .SspRes}}
                 <tr>
-                    <td>{{.Availability}}</td>
+                    <td>{{.Availability}}%</td>
                     <td>{{.Name}}</td>
                     <td>{{.Downtime}}</td>
                 </tr>

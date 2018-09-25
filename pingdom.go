@@ -105,11 +105,11 @@ func getUptimes(w http.ResponseWriter, r *http.Request) {
 	wg.Wait()
 
 	sort.Slice(cwpRes, func(i, j int) bool {
-		return cwpRes[i].uptime > cwpRes[j].uptime
+		return cwpRes[i].uptime < cwpRes[j].uptime
 	})
 
 	sort.Slice(sspRes, func(i, j int) bool {
-		return sspRes[i].uptime > sspRes[j].uptime
+		return sspRes[i].uptime < sspRes[j].uptime
 	})
 
 	cwpUptime := strconv.FormatFloat((float64(cwpTotalUptime)/float64(cwpTotalTime))*100, 'f', 3, 64)
@@ -118,17 +118,23 @@ func getUptimes(w http.ResponseWriter, r *http.Request) {
 	tmpl := template.Must(template.ParseFiles("templates/pingdom.html"))
 	data := PingdomPage{
 		Title:     "Availability report",
-		CwpRes:    parseResults(cwpRes),
-		SspRes:    parseResults(sspRes),
+		CwpRes:    parseResults(cwpRes, 99.7),
+		SspRes:    parseResults(sspRes, 99.9),
 		SspUptime: sspUptime,
 		CwpUptime: cwpUptime,
 	}
 	tmpl.Execute(w, data)
 }
 
-func parseResults(res []UptimeResult) []ResultRow {
+func parseResults(res []UptimeResult, sla float64) []ResultRow {
 	var result []ResultRow
 	for _, r := range res {
+
+		// Don't display checks that are withing the SLA
+		if r.uptime > sla {
+			continue
+		}
+
 		downtime := r.down + r.unknown
 		dur := time.Second * time.Duration(downtime)
 
