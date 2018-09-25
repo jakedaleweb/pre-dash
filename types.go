@@ -60,9 +60,11 @@ type PingdomPage struct {
 }
 
 type FreshdeskPage struct {
-	Title string
-	Avg   string
-	Count int
+	Title    string
+	Avg      string
+	Count    int
+	Diff     string
+	Increase bool
 }
 
 type ResultRow struct {

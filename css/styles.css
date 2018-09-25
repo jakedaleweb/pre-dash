@@ -52,3 +52,16 @@ img {
 .avg-incident {
 	font-size: 200%;
 }
+
+.avg-diff {
+	background-color: #130f40;
+	padding: 20px;
+}
+
+.increase {
+	color: #eb4d4b;
+}
+
+.decrease {
+	color: #6ab04c;
+}

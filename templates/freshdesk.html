@@ -16,8 +16,22 @@
         <h1>{{.Title}}</h1>
     </header>
 	<div class="center-div">
-		<h3>Average time between outages in the last 30 days based on {{.Count}} incident tickets</h3>
-		<p class="avg-incident">{{.Avg}} hours</p>
+		{{ if .Avg}}
+			<h3>Average time between outages in the last 14 days based on {{.Count}} incident tickets</h3>
+			<p class="avg-incident">{{.Avg}} hours</p>
+		{{ else }}
+			<h3>Unable to find average time between outages, possibly there's been none in the last 14 days</h3>
+		{{ end }}
+
+		<div>
+			{{ if .Diff}}
+				{{ if .Increase }}
+					<p class="avg-diff increase">Increased by {{.Diff}} hours</p>
+				{{ else }}
+					<p class="avg-diff decrease">Decreased by {{.Diff}} hours</p>
+				{{ end }}
+			{{ end }}
+		</div>
 	</div>
 </body>
 </html>

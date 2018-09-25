@@ -34,7 +34,7 @@
             "cf_flag_for_team_discussion": false,
             "cf_estimated_completion_date": null
         },
-        "created_at": "2018-09-24T13:30:32Z",
+        "created_at": "2018-09-01T13:30:32Z",
         "updated_at": "2018-09-24T13:30:33Z",
         "associated_tickets_count": null,
         "tags": []
@@ -73,7 +73,7 @@
             "cf_flag_for_team_discussion": false,
             "cf_estimated_completion_date": null
         },
-        "created_at": "2018-09-24T10:15:17Z",
+        "created_at": "2018-09-01T10:15:17Z",
         "updated_at": "2018-09-24T20:51:48Z",
         "associated_tickets_count": null,
         "tags": [
@@ -118,7 +118,7 @@
             "cf_flag_for_team_discussion": false,
             "cf_estimated_completion_date": "2018-10-01"
         },
-        "created_at": "2018-09-24T09:48:08Z",
+        "created_at": "2018-09-01T09:48:08Z",
         "updated_at": "2018-09-24T09:49:45Z",
         "associated_tickets_count": null,
         "tags": [
@@ -162,7 +162,7 @@
             "cf_flag_for_team_discussion": false,
             "cf_estimated_completion_date": "2018-09-28"
         },
-        "created_at": "2018-09-24T08:08:14Z",
+        "created_at": "2018-09-01T08:08:14Z",
         "updated_at": "2018-09-24T08:13:48Z",
         "associated_tickets_count": null,
         "tags": []

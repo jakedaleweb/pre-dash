@@ -5,11 +5,13 @@ import (
 	"html/template"
 	"io/ioutil"
 	"log"
+	"math"
 	"net/http"
 	"os"
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func getIncidentTickets(w http.ResponseWriter, r *http.Request) {
@@ -27,22 +29,36 @@ func getIncidentTickets(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(unmarshErr)
 	}
 
-	incidents, filterErr := sortIncidentTickets(tickets)
-	if filterErr != nil {
-		log.Fatal(filterErr)
+	incidentsRecent, incidentsPrev := sortIncidentTickets(tickets)
+
+	recentAvg := getAverageBetween(incidentsRecent)
+	prevAvg := getAverageBetween(incidentsPrev)
+
+	strAvg := strconv.FormatFloat(recentAvg, 'f', 3, 64)
+	if math.IsNaN(recentAvg) {
+		strAvg = ""
 	}
 
-	length := len(incidents)
-	if length < 1 {
-		w.Write([]byte("Only one Incident in the last 30 days cannot work out average time between"))
-		return
+	// If recent avg is 5 and previosu is 6 we are down one hour so the diff is -1 which is positive
+	diff := recentAvg - prevAvg
+	strDiff := strconv.FormatFloat(diff, 'f', 3, 64)
+	if math.IsNaN(diff) {
+		strDiff = ""
+	}
+
+	// Check if the diff is less than 0 (i.e. not increased)
+	increase := true
+	if diff < 0 {
+		increase = false
 	}
 
 	tmpl := template.Must(template.ParseFiles("templates/freshdesk.html"))
 	data := FreshdeskPage{
-		Title: "Time between incidents",
-		Avg:   getAverageBetween(length, incidents),
-		Count: length,
+		Title:    "Time between incidents",
+		Avg:      strAvg,
+		Count:    len(incidentsRecent),
+		Diff:     strDiff,
+		Increase: increase,
 	}
 	tmpl.Execute(w, data)
 }
@@ -77,32 +93,41 @@ func unmarshalTickets(ticketsJson []byte, tickets *Tickets) error {
 	return nil
 }
 
-// Returns a list of incident tickets sorted by creation time
-func sortIncidentTickets(tickets *Tickets) ([]Ticket, error) {
-	var incidents []Ticket
+// Returns two lists of incident tickets sorted by creation time.
+// First lot of tickets are from the previous 2 weeks the other is from the 2 preceeding that
+func sortIncidentTickets(tickets *Tickets) ([]Ticket, []Ticket) {
+	var incidentsRecent []Ticket
+	var incidentsPrev []Ticket
+
 	for _, ticket := range *tickets {
-		incidents = append(incidents, ticket)
+		if ticket.CreatedAt.After(time.Now().Add(-14 * 24 * time.Hour)) {
+			incidentsRecent = append(incidentsRecent, ticket)
+		} else {
+			incidentsPrev = append(incidentsPrev, ticket)
+		}
 	}
 
-	sort.Slice(incidents, func(i, j int) bool {
-		return incidents[i].CreatedAt.Before(incidents[j].CreatedAt)
+	sort.Slice(incidentsRecent, func(i, j int) bool {
+		return incidentsRecent[i].CreatedAt.Before(incidentsRecent[j].CreatedAt)
 	})
 
-	return incidents, nil
+	sort.Slice(incidentsPrev, func(i, j int) bool {
+		return incidentsPrev[i].CreatedAt.Before(incidentsPrev[j].CreatedAt)
+	})
+
+	return incidentsRecent, incidentsPrev
 }
 
 // Returns average time between incident tickets creation in hours
-func getAverageBetween(length int, incidents []Ticket) string {
+func getAverageBetween(incidents []Ticket) float64 {
 	var timeBetween float64
 
-	for i := 1; i < length; i++ {
+	for i := 1; i < len(incidents); i++ {
 		prev := i - 1
 		between := incidents[i].CreatedAt.Sub(incidents[prev].CreatedAt).Hours()
 		timeBetween += between
 	}
 
-	avgTimeBetween := timeBetween / float64(length)
-	strAvg := strconv.FormatFloat(avgTimeBetween, 'f', 3, 64)
-
-	return strAvg
+	avgTimeBetween := timeBetween / float64(len(incidents))
+	return avgTimeBetween
 }

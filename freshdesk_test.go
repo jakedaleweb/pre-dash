@@ -20,13 +20,10 @@ func TestUnmarshalTickets(t *testing.T) {
 		log.Fatal(unmarshErr)
 	}
 
-	incidents, filterErr := sortIncidentTickets(tickets)
-	if filterErr != nil {
-		log.Fatal(filterErr)
-	}
+	_, incidentsPrev := sortIncidentTickets(tickets)
 
-	avg := getAverageBetween(len(incidents), incidents)
-	if avg != "1.343" {
-		t.Error(fmt.Sprintf("Average time between incidents should be 1.343 - %v received", avg))
+	avg := getAverageBetween(incidentsPrev)
+	if avg != 1.3429166666666665 {
+		t.Error(fmt.Sprintf("Average time between incidents should be 1.3429166666666665 - %v received", avg))
 	}
 }
