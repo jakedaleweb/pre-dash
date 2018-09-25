@@ -2,20 +2,18 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
+	"html/template"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"sort"
 	"strings"
-
-	"github.com/subosito/gotenv"
 )
 
 func getIncidentTickets(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "max-age=300")
-	gotenv.Load()
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
 	ticketsJson, getTickErr := getTickets()
 	if getTickErr != nil {
@@ -35,17 +33,22 @@ func getIncidentTickets(w http.ResponseWriter, r *http.Request) {
 
 	length := len(incidents)
 	if length < 1 {
-		w.Write([]byte("Only one Incident in the last <TIME> cannot work out average time between"))
+		w.Write([]byte("Only one Incident in the last 30 days cannot work out average time between"))
 		return
 	}
 
-	avgTimeBetween := getAverageBetween(length, incidents)
-	w.Write([]byte(fmt.Sprintf("Average time between incident tickets: %v", avgTimeBetween)))
+	tmpl := template.Must(template.ParseFiles("templates/freshdesk.html"))
+	data := FreshdeskPage{
+		Title: "Time between incidents",
+		Avg:   getAverageBetween(length, incidents),
+	}
+	tmpl.Execute(w, data)
 }
 
 // Returns tickets from Freshdesk as bytes
 func getTickets() ([]byte, error) {
 
+	// https://developers.freshdesk.com/api/#view_a_ticket
 	url := strings.Join([]string{"https://", os.Getenv("FRESHDESK_URL"), "/api/v2/tickets"}, "")
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", url, nil)

@@ -1,6 +1,10 @@
 package main
 
-import "time"
+import (
+	"time"
+
+	"github.com/russellcardullo/go-pingdom/pingdom"
+)
 
 type Tickets []Ticket
 
@@ -41,4 +45,48 @@ type Ticket struct {
 	UpdatedAt              time.Time     `json:"updated_at"`
 	AssociatedTicketsCount interface{}   `json:"associated_tickets_count"`
 	Tags                   []interface{} `json:"tags"`
+}
+
+type summaryOutageJsonResponse struct {
+	Summary struct {
+		States []State `json:"states"`
+	} `json:"summary"`
+}
+
+type State struct {
+	Status   string `json:"status"`
+	Timefrom int64  `json:"timefrom"`
+	Timeto   int64  `json:"timeto"`
+}
+
+type UptimeResult struct {
+	check   pingdom.CheckResponse
+	uptime  float64
+	up      int64
+	down    int64
+	unknown int64
+}
+
+type HomePage struct {
+	Title string
+	Body  []byte
+}
+
+type PingdomPage struct {
+	Title     string
+	CwpRes    []ResultRow
+	SspRes    []ResultRow
+	SspUptime string
+	CwpUptime string
+}
+
+type FreshdeskPage struct {
+	Title string
+	Avg   float64
+}
+
+type ResultRow struct {
+	Availability string
+	Name         string
+	Downtime     string
 }

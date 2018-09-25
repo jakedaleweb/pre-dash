@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>{{.Title}}</title>
+	<link rel="stylesheet" type="text/css" href="css/styles.css">
+</head>
+<body>
+    <header>
+    <nav>
+        <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="/freshdesk" class="selected">Time between incidents</a></li>
+            <li><a href="/pingdom">Availability report</a></li>
+        </ul>
+    </nav>
+        <h1>{{.Title}}</h1>
+    </header>
+	<div>
+		<p>Average time between outages in the last 30 days: {{.Avg}} minutes</p>
+	</div>
+</body>
+</html>

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"html/template"
 	"net/http"
 	"os"
 	"sort"
@@ -11,20 +12,12 @@ import (
 	"time"
 
 	"github.com/russellcardullo/go-pingdom/pingdom"
-	"github.com/subosito/gotenv"
 )
-
-type UptimeResult struct {
-	check   pingdom.CheckResponse
-	uptime  float64
-	up      int64
-	down    int64
-	unknown int64
-}
 
 func getUptimes(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "max-age=300")
-	gotenv.Load()
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
 	client := pingdom.NewClient(os.Getenv("PINGDOM_EMAIL"), os.Getenv("PINGDOM_PASSWORD"), os.Getenv("PINGDOM_TOKEN"))
 
 	checks, err := client.Checks.List()
@@ -119,48 +112,38 @@ func getUptimes(w http.ResponseWriter, r *http.Request) {
 		return sspRes[i].uptime > sspRes[j].uptime
 	})
 
-	for _, r := range cwpRes {
-		downtime := r.down + r.unknown
-		dur := time.Second * time.Duration(downtime)
-
-		uptimeString := strconv.FormatFloat(r.uptime, 'f', 3, 64)
-		cwpUptimeMessage := strings.Join([]string{uptimeString, r.check.Name, dur.String(), "\n"}, " | ")
-		w.Write([]byte(cwpUptimeMessage))
-	}
-
-	w.Write([]byte("\n"))
-
-	for _, r := range sspRes {
-		downtime := r.down + r.unknown
-		dur := time.Second * time.Duration(downtime)
-
-		uptimeString := strconv.FormatFloat(r.uptime, 'f', 3, 64)
-		sspUptimeMessage := strings.Join([]string{uptimeString, r.check.Name, dur.String(), "\n"}, " | ")
-		w.Write([]byte(sspUptimeMessage))
-	}
-
 	cwpUptime := strconv.FormatFloat((float64(cwpTotalUptime)/float64(cwpTotalTime))*100, 'f', 3, 64)
-	cwpMessage := strings.Join([]string{"CWP Total uptime:", cwpUptime, "\n"}, " ")
-
 	sspUptime := strconv.FormatFloat((float64(sspTotalUptime)/float64(sspTotalTime))*100, 'f', 3, 64)
-	sspMessage := strings.Join([]string{"SSP Total uptime:", sspUptime, "\n"}, " ")
 
-	w.Write([]byte("\n"))
-
-	w.Write([]byte(cwpMessage))
-	w.Write([]byte(sspMessage))
+	tmpl := template.Must(template.ParseFiles("templates/pingdom.html"))
+	data := PingdomPage{
+		Title:     "Availability report",
+		CwpRes:    parseResults(cwpRes),
+		SspRes:    parseResults(sspRes),
+		SspUptime: sspUptime,
+		CwpUptime: cwpUptime,
+	}
+	tmpl.Execute(w, data)
 }
 
-type summaryOutageJsonResponse struct {
-	Summary struct {
-		States []State `json:"states"`
-	} `json:"summary"`
-}
+func parseResults(res []UptimeResult) []ResultRow {
+	var result []ResultRow
+	for _, r := range res {
+		downtime := r.down + r.unknown
+		dur := time.Second * time.Duration(downtime)
 
-type State struct {
-	Status   string `json:"status"`
-	Timefrom int64  `json:"timefrom"`
-	Timeto   int64  `json:"timeto"`
+		uptimeString := strconv.FormatFloat(r.uptime, 'f', 3, 64)
+
+		row := ResultRow{
+			Availability: uptimeString,
+			Name:         r.check.Name,
+			Downtime:     dur.String(),
+		}
+
+		result = append(result, row)
+	}
+
+	return result
 }
 
 func (s *State) From() time.Time {

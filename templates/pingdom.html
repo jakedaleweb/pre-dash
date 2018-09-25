@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{.Title}}</title>
+    <link rel="stylesheet" type="text/css" href="css/styles.css">
+</head>
+<body>
+    <header>
+    <nav>
+        <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="/freshdesk">Time between incidents</a></li>
+            <li><a href="/pingdom" class="selected">Availability report</a></li>
+        </ul>
+    </nav>
+        <h1>{{.Title}}</h1>
+    </header>
+
+    <div class="results-table-container">
+        <div class="results-table">
+            <h3>CWP Total uptime: {{.CwpUptime}}</h3>
+            <table>
+                <tr>
+                    <th>Availability</th>
+                    <th>Check</th>
+                    <th>Downtime</th>
+                </tr>
+            {{range .CwpRes}}
+                <tr>
+                    <td>{{.Availability}}</td>
+                    <td>{{.Name}}</td>
+                    <td>{{.Downtime}}</td>
+                </tr>
+            {{end}}
+            </table>
+        </div>
+
+        <div class="results-table">
+            <h3>SSP Total uptime: {{.SspUptime}}</h3>
+            <table>
+                <tr>
+                    <th>Availability</th>
+                    <th>Check</th>
+                    <th>Downtime</th>
+                </tr>
+            {{range .SspRes}}
+                <tr>
+                    <td>{{.Availability}}</td>
+                    <td>{{.Name}}</td>
+                    <td>{{.Downtime}}</td>
+                </tr>
+            {{end}}
+            </table>
+        </div>
+    </div>
+</body>
+</html>
