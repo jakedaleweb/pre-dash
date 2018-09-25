@@ -148,7 +148,7 @@
         ],
         "product_id": 22000000538,
         "id": 48354,
-        "type": "MAC\/Request",
+        "type": "Incident",
         "due_by": "2018-10-01T04:30:00Z",
         "fr_due_by": "2018-09-25T04:30:00Z",
         "is_escalated": false,

@@ -27,7 +27,7 @@ func getIncidentTickets(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(unmarshErr)
 	}
 
-	incidents, filterErr := filterIncidentTickets(tickets)
+	incidents, filterErr := sortIncidentTickets(tickets)
 	if filterErr != nil {
 		log.Fatal(filterErr)
 	}
@@ -51,7 +51,8 @@ func getIncidentTickets(w http.ResponseWriter, r *http.Request) {
 func getTickets() ([]byte, error) {
 
 	// https://developers.freshdesk.com/api/#view_a_ticket
-	url := strings.Join([]string{"https://", os.Getenv("FRESHDESK_URL"), "/api/v2/tickets"}, "")
+	// custom endpoint as getting all tickets seems to not work
+	url := strings.Join([]string{"https://", os.Getenv("FRESHDESK_URL"), "/helpdesk/tickets/view/206953?format=json"}, "")
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", url, nil)
 	req.SetBasicAuth(os.Getenv("FRESHDESK_TOKEN"), "x")
@@ -77,12 +78,10 @@ func unmarshalTickets(ticketsJson []byte, tickets *Tickets) error {
 }
 
 // Returns a list of incident tickets sorted by creation time
-func filterIncidentTickets(tickets *Tickets) ([]Ticket, error) {
+func sortIncidentTickets(tickets *Tickets) ([]Ticket, error) {
 	var incidents []Ticket
 	for _, ticket := range *tickets {
-		if ticket.Type == "Incident" {
-			incidents = append(incidents, ticket)
-		}
+		incidents = append(incidents, ticket)
 	}
 
 	sort.Slice(incidents, func(i, j int) bool {
@@ -92,13 +91,13 @@ func filterIncidentTickets(tickets *Tickets) ([]Ticket, error) {
 	return incidents, nil
 }
 
-// Returns average time between incident tickets creation in minutes
+// Returns average time between incident tickets creation in hours
 func getAverageBetween(length int, incidents []Ticket) string {
 	var timeBetween float64
 
 	for i := 1; i < length; i++ {
 		prev := i - 1
-		between := incidents[i].CreatedAt.Sub(incidents[prev].CreatedAt).Minutes()
+		between := incidents[i].CreatedAt.Sub(incidents[prev].CreatedAt).Hours()
 		timeBetween += between
 	}
 
