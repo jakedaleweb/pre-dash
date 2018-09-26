@@ -8,10 +8,10 @@
     <header>
         <nav>
             <ul>
-                <li><a href="/">Home</a></li>
-                <li><a href="/incidents">Time between incidents</a></li>
-                <li><a href="/pingdom" class="selected">Availability report</a></li>
-                <li><a href="/toil">Toil numbers</a></li>
+                <li><a href="/" class="rounded-box">Home</a></li>
+                <li><a href="/incidents" class="rounded-box">Time between incidents</a></li>
+                <li><a href="/pingdom" class="selected rounded-box">Availability report</a></li>
+                <li><a href="/toil" class="rounded-box">Toil numbers</a></li>
             </ul>
         </nav>
         <h1>{{.Title}}</h1>
@@ -20,7 +20,7 @@
     <div class="center-div">
         <h2>Uptime from the last 2 weeks in Pingdom</h2>
         <div class="results-table">
-            <div class="avg-diff">
+            <div class="avg-diff rounded-box">
                 <h3>CWP Total uptime: {{.CwpUptime}}</h3>
                 <p>SLA 99.7%</p>
                 {{ if .CwpDiff}}
@@ -48,7 +48,7 @@
         </div>
 
         <div class="results-table">
-            <div class="avg-diff">
+            <div class="avg-diff rounded-box">
                 <h3>SSP Total uptime: {{.SspUptime}}</h3>
                 <p>SLO 99.9%</p>
                 {{ if .SspDiff}}

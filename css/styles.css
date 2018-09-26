@@ -45,7 +45,7 @@ img {
 
 .center-div {
 	margin: 0 auto;
-	width: 18%;
+	width:20%;
 	text-align: center;
 }
 
@@ -56,6 +56,13 @@ img {
 .avg-diff {
 	background-color: #545761;
 	padding: 20px;
+	margin-bottom: 20px;
+}
+
+.rounded-box {
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
 }
 
 .good {
