@@ -9,8 +9,9 @@
         <nav>
             <ul>
                 <li><a href="/">Home</a></li>
-                <li><a href="/freshdesk">Time between incidents</a></li>
+                <li><a href="/incidents">Time between incidents</a></li>
                 <li><a href="/pingdom" class="selected">Availability report</a></li>
+                <li><a href="/toil">Toil numbers</a></li>
             </ul>
         </nav>
         <h1>{{.Title}}</h1>
@@ -24,9 +25,9 @@
                 <p>SLA 99.7%</p>
                 {{ if .CwpDiff}}
                     {{ if .CwpIncrease }}
-                        <p class="increase">Increased by {{.CwpDiff}}%</p>
+                        <p class="good">Increased by {{.CwpDiff}}%</p>
                     {{ else }}
-                        <p class="decrease">Decreased by {{.CwpDiff}}%</p>
+                        <p class="bad">Decreased by {{.CwpDiff}}%</p>
                     {{ end }}
                 {{ end }}
             </div>
@@ -52,9 +53,9 @@
                 <p>SLO 99.9%</p>
                 {{ if .SspDiff}}
                     {{ if .SspIncrease }}
-                        <p class="increase">Increased by {{.SspDiff}}%</p>
+                        <p class="good">Increased by {{.SspDiff}}%</p>
                     {{ else }}
-                        <p class="decrease">Decreased by {{.SspDiff}}%</p>
+                        <p class="bad">Decreased by {{.SspDiff}}%</p>
                     {{ end }}
                 {{ end }}
             </div>

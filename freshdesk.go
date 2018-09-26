@@ -2,73 +2,20 @@ package main
 
 import (
 	"encoding/json"
-	"html/template"
 	"io/ioutil"
-	"log"
-	"math"
 	"net/http"
 	"os"
 	"sort"
-	"strconv"
 	"strings"
 	"time"
 )
 
-func getIncidentTickets(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Cache-Control", "max-age=300")
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-
-	ticketsJson, getTickErr := getTickets()
-	if getTickErr != nil {
-		log.Fatal(getTickErr)
-	}
-
-	tickets := new(Tickets)
-	unmarshErr := unmarshalTickets(ticketsJson, tickets)
-	if unmarshErr != nil {
-		log.Fatal(unmarshErr)
-	}
-
-	incidentsRecent, incidentsPrev := sortIncidentTickets(tickets)
-
-	recentAvg := getAverageBetween(incidentsRecent)
-	prevAvg := getAverageBetween(incidentsPrev)
-
-	strAvg := strconv.FormatFloat(recentAvg, 'f', 3, 64)
-	if math.IsNaN(recentAvg) {
-		strAvg = ""
-	}
-
-	// If recent avg is 5 and previous is 6 we are down one hour so the diff is -1 which is negative
-	diff := recentAvg - prevAvg
-	strDiff := strconv.FormatFloat(diff, 'f', 3, 64)
-	if math.IsNaN(diff) {
-		strDiff = ""
-	}
-
-	// Check if the diff is less than 0 (i.e. not increased)
-	increase := true
-	if diff < 0 {
-		increase = false
-	}
-
-	tmpl := template.Must(template.ParseFiles("templates/freshdesk.html"))
-	data := FreshdeskPage{
-		Title:    "Time between incidents",
-		Avg:      strAvg,
-		Count:    len(incidentsRecent),
-		Diff:     strDiff,
-		Increase: increase,
-	}
-	tmpl.Execute(w, data)
-}
-
 // Returns tickets from Freshdesk as bytes
-func getTickets() ([]byte, error) {
+func getTickets(viewID string) ([]byte, error) {
 
 	// https://developers.freshdesk.com/api/#view_a_ticket
 	// custom endpoint as getting all tickets seems to not work
-	url := strings.Join([]string{"https://", os.Getenv("FRESHDESK_URL"), "/helpdesk/tickets/view/206953?format=json"}, "")
+	url := strings.Join([]string{"https://", os.Getenv("FRESHDESK_URL"), "/helpdesk/tickets/view/", viewID, "?format=json"}, "")
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", url, nil)
 	req.SetBasicAuth(os.Getenv("FRESHDESK_TOKEN"), "x")
@@ -95,7 +42,7 @@ func unmarshalTickets(ticketsJson []byte, tickets *Tickets) error {
 
 // Returns two lists of incident tickets sorted by creation time.
 // First lot of tickets are from the previous 2 weeks the other is from the 2 preceeding that
-func sortIncidentTickets(tickets *Tickets) ([]Ticket, []Ticket) {
+func sortTickets(tickets *Tickets) ([]Ticket, []Ticket) {
 	var incidentsRecent []Ticket
 	var incidentsPrev []Ticket
 

@@ -20,7 +20,7 @@ func TestUnmarshalTickets(t *testing.T) {
 		log.Fatal(unmarshErr)
 	}
 
-	_, incidentsPrev := sortIncidentTickets(tickets)
+	_, incidentsPrev := sortTickets(tickets)
 
 	avg := getAverageBetween(incidentsPrev)
 	if avg != 1.3429166666666665 {

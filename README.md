@@ -21,9 +21,11 @@ export PINGDOM_PASSWORD=hunter12
 export PINGDOM_TOKEN=tooooooooooooooooken
 export FRESHDESK_URL=my.freshdesk.url
 export FRESHDESK_TOKEN=verysecrettokendontshareever
+export INCIDENT_VIEW_ID=206953
+export MAC_VIEW_ID=1234
 ```
 
 ## Running
 
 `cd $GOPATH/github.com/jakedaleweb/pre-dash`
-`go install . && go run main.go pingdom.go freshdesk.go Types.go`
+`go install . && go run main.go pingdom.go freshdesk.go incidents.go toil.go types.go`

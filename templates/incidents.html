@@ -9,8 +9,9 @@
         <nav>
             <ul>
                 <li><a href="/">Home</a></li>
-                <li><a href="/freshdesk" class="selected">Time between incidents</a></li>
+                <li><a href="/incidents" class="selected">Time between incidents</a></li>
                 <li><a href="/pingdom">Availability report</a></li>
+                <li><a href="/toil">Toil numbers</a></li>
             </ul>
         </nav>
         <h1>{{.Title}}</h1>
@@ -26,9 +27,9 @@
         <div>
             {{ if .Diff}}
                 {{ if .Increase }}
-                    <p class="avg-diff increase">Increased by {{.Diff}} hours</p>
+                    <p class="avg-diff good">Increased by {{.Diff}} hours</p>
                 {{ else }}
-                    <p class="avg-diff decrease">Decreased by {{.Diff}} hours</p>
+                    <p class="avg-diff bad">Decreased by {{.Diff}} hours</p>
                 {{ end }}
             {{ end }}
         </div>

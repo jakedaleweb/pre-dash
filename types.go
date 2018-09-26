@@ -63,11 +63,18 @@ type PingdomPage struct {
 	CwpIncrease bool
 }
 
-type FreshdeskPage struct {
+type IncidentPage struct {
 	Title    string
 	Avg      string
 	Count    int
 	Diff     string
+	Increase bool
+}
+
+type ToilPage struct {
+	Title    string
+	Count    int
+	Diff     int
 	Increase bool
 }
 

@@ -11,7 +11,8 @@ func main() {
 	gotenv.Load()
 
 	http.HandleFunc("/pingdom", getUptimes)
-	http.HandleFunc("/freshdesk", getIncidentTickets)
+	http.HandleFunc("/incidents", showIncidentTickets)
+	http.HandleFunc("/toil", showMacTickets)
 	http.HandleFunc("/", homePage)
 
 	http.HandleFunc("/favicon.ico", faviconHandler)

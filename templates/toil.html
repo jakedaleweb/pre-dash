@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{.Title}}</title>
+    <link rel="stylesheet" type="text/css" href="css/styles.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/incidents">Time between incidents</a></li>
+                <li><a href="/pingdom">Availability report</a></li>
+                <li><a href="/toil" class="selected">Toil numbers</a></li>
+            </ul>
+        </nav>
+        <h1>{{.Title}}</h1>
+    </header>
+
+    <div class="center-div">
+        <div class="avg-diff">
+            {{ if .Count}}
+                <h3>{{.Count}} MAC tickets in the last 14 days</h3>
+            {{ else }}
+                <h3>Unable to find number of MAC tickets, possibly there's been none in the last 14 days</h3>
+            {{ end }}
+
+            {{ if .Diff}}
+                {{ if .Increase }}
+                    <p class="bad">Increased by {{.Diff}} tickets</p>
+                {{ else }}
+                    <p class="good">Decreased by {{.Diff}} tickets</p>
+                {{ end }}
+            {{ end }}
+        </div>
+    </div>
+</body>
+</html>
