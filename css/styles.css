@@ -1,11 +1,11 @@
 body {
-	background-color: #6ad6e3;
-	color: #130f40;
+	background-color: #292B2C;
+	color: #FFFFFF;
 	font-family: arial;
 }
 
 nav {
-	background-color: #130f40;
+	background-color: #FFFFFF;
 	padding: 10px;
 }
 
@@ -27,7 +27,7 @@ nav ul li a {
 
 nav ul li a:hover {
 	background-color: #ff7979;
-	color: #130f40;
+	color: #FFFFFF;
 }
 
 header {
@@ -40,7 +40,7 @@ img {
 
 .selected {
 	background-color: #ff7979;
-	color: #130f40;
+	color: #FFFFFF;
 }
 
 .center-div {
@@ -54,9 +54,8 @@ img {
 }
 
 .avg-diff {
-	background-color: #130f40;
+	background-color: #545761;
 	padding: 20px;
-	color: #6ad6e3;
 }
 
 .good {
