@@ -1,11 +1,11 @@
 body {
 	background-color: #292B2C;
 	color: #FFFFFF;
-	font-family: arial;
+	font-family: 'Roboto', sans-serif;
 }
 
 nav {
-	background-color: #FFFFFF;
+	/*background-color: #545761;*/
 	padding: 10px;
 }
 
@@ -22,12 +22,11 @@ nav ul li {
 nav ul li a {
 	padding: 20px;
 	text-decoration: none;
-	color: #22a6b3;
+	color: #FFFFFF;
 }
 
 nav ul li a:hover {
-	background-color: #ff7979;
-	color: #FFFFFF;
+	background-color: #1077B2;
 }
 
 header {
@@ -39,7 +38,7 @@ img {
 }
 
 .selected {
-	background-color: #ff7979;
+	background-color: #1995E0;
 	color: #FFFFFF;
 }
 
@@ -56,7 +55,7 @@ img {
 .avg-diff {
 	background-color: #545761;
 	padding: 20px;
-	margin-bottom: 20px;
+	margin: 20px 0;
 }
 
 .rounded-box {
