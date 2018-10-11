@@ -6,6 +6,13 @@ import (
 	"github.com/russellcardullo/go-pingdom/pingdom"
 )
 
+type PlatformType string
+
+const (
+	PlatformSSP PlatformType = "SSP"
+	PlatformCWP              = "CWP"
+)
+
 type Tickets []Ticket
 
 type Ticket struct {
@@ -39,11 +46,13 @@ type State struct {
 }
 
 type UptimeResult struct {
-	check   pingdom.CheckResponse
-	uptime  float64
-	up      int64
-	down    int64
-	unknown int64
+	platform PlatformType
+	check    pingdom.CheckResponse
+	uptime   float64
+	up       int64
+	down     int64
+	total    int64
+	unknown  int64
 }
 
 type HomePage struct {

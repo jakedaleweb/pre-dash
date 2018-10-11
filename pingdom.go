@@ -89,70 +89,33 @@ func formatSummaries(from time.Time, to time.Time) ([]UptimeResult, []UptimeResu
 	var wg sync.WaitGroup
 	wg.Add(len(checks))
 
-	for i, check := range checks {
-		go func(i int, check pingdom.CheckResponse) {
-			defer wg.Done()
+	upTimeResults := make(chan UptimeResult)
 
-			if check.Paused {
-				return
-			}
-
-			if check.Status == "paused" {
-				return
-			}
-
-			states, err := outageSummary(client, check.ID, from, to)
-			if err != nil {
-				return
-			}
-
-			var uptimeSec int64
-			var downtimeSec int64
-			var unknownSec int64
-
-			for _, k := range states {
-				switch k.Status {
-				case "up":
-					uptimeSec += k.Timeto - k.Timefrom
-				case "down":
-					downtimeSec += k.Timeto - k.Timefrom
-				case "unknown":
-					unknownSec += k.Timeto - k.Timefrom
-				}
-			}
-
-			total := uptimeSec + downtimeSec + unknownSec
-			if total == 0 {
-				return
-			}
-
-			if strings.Contains(check.Name, "CWP") {
-				cwpTotalUptime += uptimeSec
-				cwpTotalTime += total
-				cwpRes = append(cwpRes, UptimeResult{
-					check:   check,
-					uptime:  (float64(uptimeSec) / float64(total)) * 100,
-					up:      uptimeSec,
-					down:    downtimeSec,
-					unknown: unknownSec,
-				})
-			}
-
-			if strings.Contains(check.Name, "SSP") {
-				sspTotalUptime += uptimeSec
-				sspTotalTime += total
-				sspRes = append(sspRes, UptimeResult{
-					check:   check,
-					uptime:  (float64(uptimeSec) / float64(total)) * 100,
-					up:      uptimeSec,
-					down:    downtimeSec,
-					unknown: unknownSec,
-				})
-			}
-		}(i, check)
+	for _, check := range checks {
+		go func(c pingdom.CheckResponse) {
+			calculateUptimeResult(c, client, from, to, upTimeResults)
+			wg.Done()
+		}(check)
 	}
 
-	wg.Wait()
+	go func() {
+		wg.Wait()
+		close(upTimeResults)
+	}()
+
+	for result := range upTimeResults {
+		switch result.platform {
+		case PlatformCWP:
+			cwpTotalUptime += result.up
+			cwpTotalTime += result.total
+			cwpRes = append(cwpRes, result)
+
+		case PlatformSSP:
+			sspTotalUptime += result.up
+			sspTotalTime += result.total
+			sspRes = append(sspRes, result)
+		}
+	}
 
 	cwpUptime := float64(cwpTotalUptime) / float64(cwpTotalTime) * 100
 	sspUptime := float64(sspTotalUptime) / float64(sspTotalTime) * 100
@@ -166,6 +129,62 @@ func formatSummaries(from time.Time, to time.Time) ([]UptimeResult, []UptimeResu
 	})
 
 	return cwpRes, sspRes, cwpUptime, sspUptime, nil
+}
+
+func calculateUptimeResult(check pingdom.CheckResponse, client *pingdom.Client, from, to time.Time, out chan UptimeResult) {
+	if check.Paused {
+		return
+	}
+
+	if check.Status == "paused" {
+		return
+	}
+
+	states, err := outageSummary(client, check.ID, from, to)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error during outageSummary: %s\n", err)
+		return
+	}
+
+	var uptimeSec int64
+	var downtimeSec int64
+	var unknownSec int64
+
+	for _, k := range states {
+		switch k.Status {
+		case "up":
+			uptimeSec += k.Timeto - k.Timefrom
+		case "down":
+			downtimeSec += k.Timeto - k.Timefrom
+		case "unknown":
+			unknownSec += k.Timeto - k.Timefrom
+		}
+	}
+
+	total := uptimeSec + downtimeSec + unknownSec
+	if total == 0 {
+		return
+	}
+
+	result := UptimeResult{
+		check:   check,
+		uptime:  (float64(uptimeSec) / float64(total)) * 100,
+		up:      uptimeSec,
+		down:    downtimeSec,
+		unknown: unknownSec,
+		total:   total,
+	}
+
+	if strings.Contains(check.Name, "CWP") {
+		result.platform = PlatformCWP
+	} else if strings.Contains(check.Name, "SSP") {
+		result.platform = PlatformSSP
+	} else {
+		return
+	}
+
+	out <- result
+
 }
 
 func parseResults(res []UptimeResult, sla float64) []ResultRow {
