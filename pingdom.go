@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"sort"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -33,9 +32,6 @@ func getUptimes(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 
-	cwpUptimeStr := strconv.FormatFloat(cwpUptime, 'f', 3, 64)
-	sspUptimeStr := strconv.FormatFloat(sspUptime, 'f', 3, 64)
-
 	cwpDiff := cwpUptime - cwpUptimePrev
 	// Check if the diff is less than 0 (i.e. not increased)
 	cwpIncrease := true
@@ -50,19 +46,16 @@ func getUptimes(w http.ResponseWriter, r *http.Request) {
 		sspIncrease = false
 	}
 
-	cwpDiffStr := strconv.FormatFloat(cwpDiff, 'f', 3, 64)
-	sspDiffStr := strconv.FormatFloat(sspDiff, 'f', 3, 64)
-
 	tmpl := template.Must(template.ParseFiles("templates/pingdom.html"))
 	data := PingdomPage{
 		Title:       "Availability report",
 		CwpRes:      parseResults(cwpRes, 99.7),
 		SspRes:      parseResults(sspRes, 99.9),
-		SspUptime:   sspUptimeStr,
-		CwpUptime:   cwpUptimeStr,
-		SspDiff:     sspDiffStr,
+		SspUptime:   fmt.Sprintf("%0.2f", sspUptime),
+		CwpUptime:   fmt.Sprintf("%0.2f", cwpUptime),
+		SspDiff:     fmt.Sprintf("%0.2f", sspDiff),
 		SspIncrease: sspIncrease,
-		CwpDiff:     cwpDiffStr,
+		CwpDiff:     fmt.Sprintf("%0.2f", cwpDiff),
 		CwpIncrease: cwpIncrease,
 	}
 	tmpl.Execute(w, data)
@@ -196,15 +189,19 @@ func parseResults(res []UptimeResult, sla float64) []ResultRow {
 			continue
 		}
 
-		downtime := r.down + r.unknown
-		dur := time.Second * time.Duration(downtime)
+		// calculate how many seconds are allowed to be down
+		allowedDowntimeSLA := (100.0 - sla) / 100.0
+		allowed := float64(r.total) * allowedDowntimeSLA
 
-		uptimeString := strconv.FormatFloat(r.uptime, 'f', 3, 64)
+		downtime := time.Second * time.Duration(r.down)
 
+		// calculate how much is left in the error budget
+		errorBudget := time.Second * time.Duration(int64(allowed)-r.down)
 		row := ResultRow{
-			Availability: uptimeString,
+			Availability: fmt.Sprintf("%0.2f", r.uptime),
 			Name:         r.check.Name,
-			Downtime:     dur.String(),
+			Downtime:     fmtDuration(downtime),
+			ErrorBudget:  fmtDuration(errorBudget),
 		}
 
 		result = append(result, row)
@@ -243,4 +240,26 @@ func outageSummary(client *pingdom.Client, checkid int, from time.Time, to time.
 	defer resp.Body.Close()
 
 	return res.Summary.States, nil
+}
+
+// format duration into a string rounded to hours and minutes with a sign
+func fmtDuration(dur time.Duration) string {
+
+	var sign string
+	if dur < 0 {
+		sign = "-"
+		dur *= -1
+	}
+
+	d := dur.Round(time.Minute)
+	h := d / time.Hour
+
+	d -= h * time.Hour
+	m := d / time.Minute
+
+	if int(h) != 0 {
+		return fmt.Sprintf("%s%dh %02dm", sign, h, m)
+	}
+
+	return fmt.Sprintf("%s%2dm", sign, m)
 }

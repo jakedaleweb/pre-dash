@@ -33,17 +33,19 @@
                     {{ end }}
                 {{ end }}
             </div>
-            <table>
+            <table class="full-width">
                 <tr>
                     <th>Availability</th>
-                    <th>Check</th>
-                    <th>Downtime</th>
+                    <th class="left">Check</th>
+                    <th class="right">Downtime</th>
+                    <th class="right">Error budget</th>
                 </tr>
             {{range .CwpRes}}
                 <tr>
                     <td>{{.Availability}}%</td>
-                    <td>{{.Name}}</td>
-                    <td>{{.Downtime}}</td>
+                    <td class="left">{{.Name}}</td>
+                    <td class="right">{{.Downtime}}</td>
+                    <td class="bad right">{{.ErrorBudget}}</td>
                 </tr>
             {{end}}
             </table>
@@ -61,17 +63,19 @@
                     {{ end }}
                 {{ end }}
             </div>
-            <table>
+            <table class="full-width">
                 <tr>
                     <th>Availability</th>
-                    <th>Check</th>
-                    <th>Downtime</th>
+                    <th class="left">Check</th>
+                    <th class="right">Downtime</th>
+                    <th class="right">Error budget</th>
                 </tr>
             {{range .SspRes}}
                 <tr>
                     <td>{{.Availability}}%</td>
-                    <td>{{.Name}}</td>
-                    <td>{{.Downtime}}</td>
+                    <td class="left">{{.Name}}</td>
+                    <td class="right">{{.Downtime}}</td>
+                    <td class="bad right">{{.ErrorBudget}}</td>
                 </tr>
             {{end}}
             </table>
