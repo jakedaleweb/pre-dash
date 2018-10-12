@@ -91,4 +91,5 @@ type ResultRow struct {
 	Availability string
 	Name         string
 	Downtime     string
+	ErrorBudget  string
 }

@@ -189,13 +189,19 @@ func parseResults(res []UptimeResult, sla float64) []ResultRow {
 			continue
 		}
 
-		downtime := r.down + r.unknown
-		dur := time.Second * time.Duration(downtime)
+		// calculate how many seconds are allowed to be down
+		allowedDowntimeSLA := (100.0 - sla) / 100.0
+		allowed := float64(r.total) * allowedDowntimeSLA
 
+		downtime := time.Second * time.Duration(r.down)
+
+		// calculate how much is left in the error budget
+		errorBudget := time.Second * time.Duration(int64(allowed)-r.down)
 		row := ResultRow{
 			Availability: fmt.Sprintf("%0.2f", r.uptime),
 			Name:         r.check.Name,
-			Downtime:     dur.String(),
+			Downtime:     fmtDuration(downtime),
+			ErrorBudget:  fmtDuration(errorBudget),
 		}
 
 		result = append(result, row)
@@ -234,4 +240,26 @@ func outageSummary(client *pingdom.Client, checkid int, from time.Time, to time.
 	defer resp.Body.Close()
 
 	return res.Summary.States, nil
+}
+
+// format duration into a string rounded to hours and minutes with a sign
+func fmtDuration(dur time.Duration) string {
+
+	var sign string
+	if dur < 0 {
+		sign = "-"
+		dur *= -1
+	}
+
+	d := dur.Round(time.Minute)
+	h := d / time.Hour
+
+	d -= h * time.Hour
+	m := d / time.Minute
+
+	if int(h) != 0 {
+		return fmt.Sprintf("%s%dh %02dm", sign, h, m)
+	}
+
+	return fmt.Sprintf("%s%2dm", sign, m)
 }
