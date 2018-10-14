@@ -29,3 +29,10 @@ export MAC_VIEW_ID=1234
 
 `cd $GOPATH/github.com/jakedaleweb/pre-dash`
 `go install . && go run main.go pingdom.go freshdesk.go incidents.go toil.go types.go`
+
+## Compiling for raspberry pi
+
+`env GOOS=linux GOARCH=arm GOARM=5 go build`
+
+Then scp the entire directory over, the templates and .env file are required to be in the same directory as the compiled binary. You can then run with `./pre-dash`.
+
