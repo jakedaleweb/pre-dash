@@ -183,12 +183,6 @@ func calculateUptimeResult(check pingdom.CheckResponse, client *pingdom.Client, 
 func parseResults(res []UptimeResult, sla float64) []ResultRow {
 	var result []ResultRow
 	for _, r := range res {
-
-		// Don't display checks that are withing the SLA
-		if r.uptime > sla {
-			continue
-		}
-
 		// calculate how many seconds are allowed to be down
 		allowedDowntimeSLA := (100.0 - sla) / 100.0
 		allowed := float64(r.total) * allowedDowntimeSLA
@@ -197,11 +191,17 @@ func parseResults(res []UptimeResult, sla float64) []ResultRow {
 
 		// calculate how much is left in the error budget
 		errorBudget := time.Second * time.Duration(int64(allowed)-r.down)
+
+		// only show checks that has less than 15mins in their error budgets
+		if errorBudget > 15*time.Minute {
+			continue
+		}
 		row := ResultRow{
 			Availability: fmt.Sprintf("%0.2f", r.uptime),
 			Name:         r.check.Name,
 			Downtime:     fmtDuration(downtime),
 			ErrorBudget:  fmtDuration(errorBudget),
+			IsMinus:      errorBudget <= 0,
 		}
 
 		result = append(result, row)
