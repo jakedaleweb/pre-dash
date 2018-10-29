@@ -92,4 +92,5 @@ type ResultRow struct {
 	Name         string
 	Downtime     string
 	ErrorBudget  string
+	IsMinus      bool
 }

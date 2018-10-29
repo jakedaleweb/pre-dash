@@ -45,7 +45,11 @@
                     <td>{{.Availability}}%</td>
                     <td class="left">{{.Name}}</td>
                     <td class="right">{{.Downtime}}</td>
-                    <td class="bad right">{{.ErrorBudget}}</td>
+                    {{ if .IsMinus }}
+                        <td class="bad right">{{.ErrorBudget}}</td>
+                    {{ else }}
+                        <td class="warning right">{{.ErrorBudget}}</td>
+                    {{ end }}
                 </tr>
             {{end}}
             </table>
@@ -75,7 +79,11 @@
                     <td>{{.Availability}}%</td>
                     <td class="left">{{.Name}}</td>
                     <td class="right">{{.Downtime}}</td>
+                    {{ if .IsMinus }}
                     <td class="bad right">{{.ErrorBudget}}</td>
+                    {{ else }}
+                    <td class="warning right">{{.ErrorBudget}}</td>
+                    {{ end }}
                 </tr>
             {{end}}
             </table>
