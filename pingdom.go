@@ -46,19 +46,47 @@ func getUptimes(w http.ResponseWriter, r *http.Request) {
 		sspIncrease = false
 	}
 
-	tmpl := template.Must(template.ParseFiles("templates/pingdom.html"))
+	funcMap := template.FuncMap{
+		"add": func(x int, y int) int {
+			return x + y
+		},
+		"times": func(x int, y int) int {
+			return x * y
+		},
+		"substr": func(str string, length int) string {
+			if length <= len(str) {
+				substring := str[:length]
+				return substring + "..."
+			}
+
+			return str
+		},
+	}
+
+	cwpResRows := parseResults(cwpRes, 99.7)
+	cwpLen := len(cwpResRows) / 3
+
+	sspResRows := parseResults(sspRes, 99.9)
+	sspLen := len(sspResRows) / 3
+
+	tmpl := template.Must(template.New("pingdom.html").Funcs(funcMap).ParseFiles("templates/pingdom.html"))
 	data := PingdomPage{
 		Title:       "Availability report",
-		CwpRes:      parseResults(cwpRes, 99.7),
-		SspRes:      parseResults(sspRes, 99.9),
+		CwpRes:      cwpResRows,
+		SspRes:      sspResRows,
 		SspUptime:   fmt.Sprintf("%0.2f", sspUptime),
 		CwpUptime:   fmt.Sprintf("%0.2f", cwpUptime),
 		SspDiff:     fmt.Sprintf("%0.2f", sspDiff),
 		SspIncrease: sspIncrease,
 		CwpDiff:     fmt.Sprintf("%0.2f", cwpDiff),
 		CwpIncrease: cwpIncrease,
+		CwpRowCount: make([]struct{}, cwpLen),
+		SspRowCount: make([]struct{}, sspLen),
 	}
-	tmpl.Execute(w, data)
+	if err := tmpl.Execute(w, data); err != nil {
+		fmt.Println(err)
+	}
+
 }
 
 func formatSummaries(from time.Time, to time.Time) ([]UptimeResult, []UptimeResult, float64, float64, error) {

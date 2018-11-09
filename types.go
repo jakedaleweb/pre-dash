@@ -70,6 +70,8 @@ type PingdomPage struct {
 	SspIncrease bool
 	CwpDiff     string
 	CwpIncrease bool
+	CwpRowCount []struct{}
+	SspRowCount []struct{}
 }
 
 type IncidentPage struct {
