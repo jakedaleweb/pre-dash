@@ -66,7 +66,7 @@
                 {{range $idx, $e := .CwpRowCount}}{{ $idx = add $idx $rowLength }}{{with $n := index $.CwpRes $idx}}
                     <tr>
                         <td>{{$n.Availability}}%</td>
-                        <td class="left">{{substr $n.Name 25}}</td>
+                        <td class="left">{{substr $n.Name 22}}</td>
                         <td class="right">{{$n.Downtime}}</td>
                         {{ if .IsMinus }}
                             <td class="bad right">{{$n.ErrorBudget}}</td>
@@ -89,7 +89,7 @@
                 {{range $idx, $e := .CwpRowCount}}{{ $idx = add $idx $doubleLength }}{{with $n := index $.CwpRes $idx}}
                     <tr>
                         <td>{{$n.Availability}}%</td>
-                        <td class="left">{{substr $n.Name 25}}</td>
+                        <td class="left">{{substr $n.Name 22}}</td>
                         <td class="right">{{$n.Downtime}}</td>
                         {{ if .IsMinus }}
                             <td class="bad right">{{$n.ErrorBudget}}</td>
@@ -127,7 +127,7 @@
             {{range $idx, $e := .SspRowCount}}{{with $n := index $.SspRes $idx}}
                 <tr>
                     <td>{{$n.Availability}}%</td>
-                    <td class="left">{{substr $n.Name 25}}</td>
+                    <td class="left">{{substr $n.Name 22}}</td>
                     <td class="right">{{$n.Downtime}}</td>
                     {{ if .IsMinus }}
                         <td class="bad right">{{$n.ErrorBudget}}</td>
@@ -148,7 +148,7 @@
                 {{range $idx, $e := .SspRowCount}}{{ $idx = add $idx $rowLength }}{{with $n := index $.SspRes $idx}}
                     <tr>
                         <td>{{$n.Availability}}%</td>
-                        <td class="left">{{substr $n.Name 25}}</td>
+                        <td class="left">{{substr $n.Name 22}}</td>
                         <td class="right">{{$n.Downtime}}</td>
                         {{ if .IsMinus }}
                             <td class="bad right">{{$n.ErrorBudget}}</td>
@@ -171,7 +171,7 @@
                 {{range $idx, $e := .SspRowCount}}{{ $idx = add $idx $doubleLength }}{{with $n := index $.SspRes $idx}}
                     <tr>
                         <td>{{$n.Availability}}%</td>
-                        <td class="left">{{substr $n.Name 25}}</td>
+                        <td class="left">{{substr $n.Name 22}}</td>
                         <td class="right">{{$n.Downtime}}</td>
                         {{ if .IsMinus }}
                             <td class="bad right">{{$n.ErrorBudget}}</td>
