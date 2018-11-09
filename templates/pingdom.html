@@ -21,7 +21,7 @@
 
     <div class="center-div">
         <h2>Uptime from the last 2 weeks in Pingdom</h2>
-        <div class="results-table">
+        <div class="results-table clearfix">
             <div class="avg-diff rounded-box">
                 <h3>CWP Total uptime: {{.CwpUptime}}</h3>
                 <p>SLA 99.7%</p>
@@ -33,26 +33,74 @@
                     {{ end }}
                 {{ end }}
             </div>
-            <table class="full-width">
+            <table class="full-width availability-table rounded-box">
                 <tr>
                     <th>Availability</th>
                     <th class="left">Check</th>
                     <th class="right">Downtime</th>
                     <th class="right">Error budget</th>
                 </tr>
-            {{range .CwpRes}}
+            {{ $cwpLength := len .CwpRes }}
+            {{ $rowLength := len .CwpRowCount }}
+            {{range $idx, $e := .CwpRowCount}}{{with $n := index $.CwpRes $idx}}
                 <tr>
-                    <td>{{.Availability}}%</td>
-                    <td class="left">{{.Name}}</td>
-                    <td class="right">{{.Downtime}}</td>
+                    <td>{{$n.Availability}}%</td>
+                    <td class="left">{{substr $n.Name 25}}</td>
+                    <td class="right">{{$n.Downtime}}</td>
                     {{ if .IsMinus }}
-                        <td class="bad right">{{.ErrorBudget}}</td>
+                        <td class="bad right">{{$n.ErrorBudget}}</td>
                     {{ else }}
-                        <td class="warning right">{{.ErrorBudget}}</td>
+                        <td class="warning right">{{$n.ErrorBudget}}</td>
                     {{ end }}
                 </tr>
-            {{end}}
+            {{ end }}{{ end }}
             </table>
+            {{ $rowLength := len .CwpRowCount }}{{ if gt $cwpLength $rowLength}}
+                <table class="full-width availability-table rounded-box">
+                    <tr>
+                        <th>Availability</th>
+                        <th class="left">Check</th>
+                        <th class="right">Downtime</th>
+                        <th class="right">Error budget</th>
+                    </tr>
+                {{range $idx, $e := .CwpRowCount}}{{ $idx = add $idx $rowLength }}{{with $n := index $.CwpRes $idx}}
+                    <tr>
+                        <td>{{$n.Availability}}%</td>
+                        <td class="left">{{substr $n.Name 25}}</td>
+                        <td class="right">{{$n.Downtime}}</td>
+                        {{ if .IsMinus }}
+                            <td class="bad right">{{$n.ErrorBudget}}</td>
+                        {{ else }}
+                            <td class="warning right">{{$n.ErrorBudget}}</td>
+                        {{ end }}
+                    </tr>
+                {{ end }}{{ end }}
+                </table>
+            {{ end }}
+            {{ $doubleLength := times 2 $rowLength }}
+            {{ if gt $cwpLength $doubleLength}}
+                <table class="full-width availability-table rounded-box">
+                    <tr>
+                        <th>Availability</th>
+                        <th class="left">Check</th>
+                        <th class="right">Downtime</th>
+                        <th class="right">Error budget</th>
+                    </tr>
+                {{range $idx, $e := .CwpRowCount}}{{ $idx = add $idx $doubleLength }}{{with $n := index $.CwpRes $idx}}
+                    <tr>
+                        <td>{{$n.Availability}}%</td>
+                        <td class="left">{{substr $n.Name 25}}</td>
+                        <td class="right">{{$n.Downtime}}</td>
+                        {{ if .IsMinus }}
+                            <td class="bad right">{{$n.ErrorBudget}}</td>
+                        {{ else }}
+                            <td class="warning right">{{$n.ErrorBudget}}</td>
+                        {{ end }}
+                    </tr>
+                {{ end }}{{ end }}
+                </table>
+            {{ end }}
+
         </div>
 
         <div class="results-table">
@@ -67,27 +115,75 @@
                     {{ end }}
                 {{ end }}
             </div>
-            <table class="full-width">
+            <table class="full-width availability-table rounded-box">
                 <tr>
                     <th>Availability</th>
                     <th class="left">Check</th>
                     <th class="right">Downtime</th>
                     <th class="right">Error budget</th>
                 </tr>
-            {{range .SspRes}}
+            {{ $sspLength := len .SspRes }}
+            {{ $rowLength := len .SspRowCount }}
+            {{range $idx, $e := .SspRowCount}}{{with $n := index $.SspRes $idx}}
                 <tr>
-                    <td>{{.Availability}}%</td>
-                    <td class="left">{{.Name}}</td>
-                    <td class="right">{{.Downtime}}</td>
+                    <td>{{$n.Availability}}%</td>
+                    <td class="left">{{substr $n.Name 25}}</td>
+                    <td class="right">{{$n.Downtime}}</td>
                     {{ if .IsMinus }}
-                    <td class="bad right">{{.ErrorBudget}}</td>
+                        <td class="bad right">{{$n.ErrorBudget}}</td>
                     {{ else }}
-                    <td class="warning right">{{.ErrorBudget}}</td>
+                        <td class="warning right">{{$n.ErrorBudget}}</td>
                     {{ end }}
                 </tr>
-            {{end}}
+            {{ end }}{{ end }}
             </table>
+            {{ $rowLength := len .SspRowCount }}{{ if gt $sspLength $rowLength}}
+                <table class="full-width availability-table rounded-box">
+                    <tr>
+                        <th>Availability</th>
+                        <th class="left">Check</th>
+                        <th class="right">Downtime</th>
+                        <th class="right">Error budget</th>
+                    </tr>
+                {{range $idx, $e := .SspRowCount}}{{ $idx = add $idx $rowLength }}{{with $n := index $.SspRes $idx}}
+                    <tr>
+                        <td>{{$n.Availability}}%</td>
+                        <td class="left">{{substr $n.Name 25}}</td>
+                        <td class="right">{{$n.Downtime}}</td>
+                        {{ if .IsMinus }}
+                            <td class="bad right">{{$n.ErrorBudget}}</td>
+                        {{ else }}
+                            <td class="warning right">{{$n.ErrorBudget}}</td>
+                        {{ end }}
+                    </tr>
+                {{ end }}{{ end }}
+                </table>
+            {{ end }}
+            {{ $doubleLength := times 2 $rowLength }}
+            {{ if gt $sspLength $doubleLength}}
+                <table class="full-width availability-table rounded-box">
+                    <tr>
+                        <th>Availability</th>
+                        <th class="left">Check</th>
+                        <th class="right">Downtime</th>
+                        <th class="right">Error budget</th>
+                    </tr>
+                {{range $idx, $e := .SspRowCount}}{{ $idx = add $idx $doubleLength }}{{with $n := index $.SspRes $idx}}
+                    <tr>
+                        <td>{{$n.Availability}}%</td>
+                        <td class="left">{{substr $n.Name 25}}</td>
+                        <td class="right">{{$n.Downtime}}</td>
+                        {{ if .IsMinus }}
+                            <td class="bad right">{{$n.ErrorBudget}}</td>
+                        {{ else }}
+                            <td class="warning right">{{$n.ErrorBudget}}</td>
+                        {{ end }}
+                    </tr>
+                {{ end }}{{ end }}
+                </table>
+            {{ end }}
         </div>
     </div>
 </body>
 </html>
+
