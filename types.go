@@ -62,16 +62,14 @@ type HomePage struct {
 
 type PingdomPage struct {
 	Title       string
-	CwpRes      []ResultRow
-	SspRes      []ResultRow
+	CwpRes      [][]ResultRow
+	SspRes      [][]ResultRow
 	SspUptime   string
 	CwpUptime   string
 	SspDiff     string
 	SspIncrease bool
 	CwpDiff     string
 	CwpIncrease bool
-	CwpRowCount []struct{}
-	SspRowCount []struct{}
 }
 
 type IncidentPage struct {

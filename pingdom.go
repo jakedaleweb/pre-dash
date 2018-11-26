@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"html/template"
 	"log"
+	"math"
 	"net/http"
 	"os"
 	"sort"
@@ -47,12 +48,6 @@ func getUptimes(w http.ResponseWriter, r *http.Request) {
 	}
 
 	funcMap := template.FuncMap{
-		"add": func(x int, y int) int {
-			return x + y
-		},
-		"times": func(x int, y int) int {
-			return x * y
-		},
 		"substr": func(str string, length int) string {
 			if length <= len(str) {
 				substring := str[:length]
@@ -63,30 +58,43 @@ func getUptimes(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-	cwpResRows := parseResults(cwpRes, 99.7)
-	cwpLen := len(cwpResRows) / 3
+	const columns = 3
 
+	cwpResRows := parseResults(cwpRes, 99.7)
 	sspResRows := parseResults(sspRes, 99.9)
-	sspLen := len(sspResRows) / 3
 
 	tmpl := template.Must(template.New("pingdom.html").Funcs(funcMap).ParseFiles("templates/pingdom.html"))
 	data := PingdomPage{
 		Title:       "Availability report",
-		CwpRes:      cwpResRows,
-		SspRes:      sspResRows,
+		CwpRes:      makeColumns(columns, cwpResRows),
+		SspRes:      makeColumns(columns, sspResRows),
 		SspUptime:   fmt.Sprintf("%0.2f", sspUptime),
 		CwpUptime:   fmt.Sprintf("%0.2f", cwpUptime),
 		SspDiff:     fmt.Sprintf("%0.2f", sspDiff),
 		SspIncrease: sspIncrease,
 		CwpDiff:     fmt.Sprintf("%0.2f", cwpDiff),
 		CwpIncrease: cwpIncrease,
-		CwpRowCount: make([]struct{}, cwpLen),
-		SspRowCount: make([]struct{}, sspLen),
 	}
 	if err := tmpl.Execute(w, data); err != nil {
 		fmt.Println(err)
 	}
 
+}
+
+// makeColumns transforms []ResultRow into a slice of []ResultsRows so it can easily
+// be printed as a table with numColumns width
+func makeColumns(numColumns int, in []ResultRow) [][]ResultRow {
+	numResults := len(in)
+	rows := int(math.Ceil(float64(numResults) / float64(numColumns)))
+	out := make([][]ResultRow, numColumns)
+	for column := range out {
+		start := column * rows
+		end := start + rows
+		for idx := start; idx < end && idx < numResults; idx++ {
+			out[column] = append(out[column], in[idx])
+		}
+	}
+	return out
 }
 
 func formatSummaries(from time.Time, to time.Time) ([]UptimeResult, []UptimeResult, float64, float64, error) {
